@@ -1,40 +1,50 @@
 <template>
   <div>
-    <h2>Listado de Personajes</h2>
-
-    <Buscador @buscar="handleBuscar" />
-    <Filtro @filtrar="handleFiltrar" />
-    <div v-if="cargando">Cargando personajes...</div>
-
-    <div v-else-if="personajes.length === 0">
-      <p>No se encontraron personajes con ese nombre.</p>
-    </div>
     
-    <div v-else class="contenedor-grid">
-      <TarjetaPersonaje 
-        v-for="personaje in personajes" 
-        :key="personaje.id" 
-        :personaje="personaje" 
-      />
+    <div v-if="!personajeSeleccionado">
+      <h2>Listado de Personajes</h2>
+      <Buscador @buscar="handleBuscar" />
+      <Filtro @filtrar="handleFiltrar" />
+      <div v-if="cargando">Cargando personajes...</div>
+
+      <div v-else-if="personajes.length === 0">
+        <p>No se encontraron personajes con ese nombre.</p>
+      </div>
+      
+      <div v-else class="contenedor-grid">
+        <TarjetaPersonaje 
+          v-for="personaje in personajes" 
+          :key="personaje.id" 
+          :personaje="personaje" 
+          @click="verDetalle(personaje)"
+        />
+      </div>
+
+      <div class="paginacion">
+        <button 
+          :disabled="paginaActual === 1" 
+          @click="cambiarPagina(paginaActual - 1)"
+        >
+          Anterior
+        </button>
+
+        <span> Página {{ paginaActual }} de {{ totalPaginas }} </span>
+
+        <button 
+          :disabled="paginaActual === totalPaginas" 
+          @click="cambiarPagina(paginaActual + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+
     </div>
 
-    <div class="paginacion">
-      <button 
-        :disabled="paginaActual === 1" 
-        @click="cambiarPagina(paginaActual - 1)"
-      >
-        Anterior
-      </button>
-
-      <span> Página {{ paginaActual }} de {{ totalPaginas }} </span>
-
-      <button 
-        :disabled="paginaActual === totalPaginas" 
-        @click="cambiarPagina(paginaActual + 1)"
-      >
-        Siguiente
-      </button>
-    </div>
+    <DetallePersonaje
+      v-else
+      :personaje="personajeSeleccionado"
+      @volver="volverAlListado"
+    />
 
   </div>
 </template>
@@ -45,6 +55,7 @@ import axios from 'axios';
 import TarjetaPersonaje from './TarjetaPersonaje.vue';
 import Buscador from './Buscador.vue';
 import Filtro from './filtro.vue';
+import DetallePersonaje from './DetallePersonaje.vue';
 
 const personajes = ref([]);
 const cargando = ref(true);
@@ -53,6 +64,8 @@ const nombreBusqueda = ref('');
 
 const paginaActual = ref(1);
 const totalPaginas = ref(0);
+
+const personajeSeleccionado = ref(null);
 
 // Esta es la función que obtiene los datos
 async function obtenerPersonajes() {
@@ -88,6 +101,14 @@ function cambiarPagina(nuevaPagina) {
     paginaActual.value = nuevaPagina;
     obtenerPersonajes();
   }
+}
+
+function verDetalle(personaje) {
+  personajeSeleccionado.value = personaje;
+}
+
+function volverAlListado() {
+  personajeSeleccionado.value = null;
 }
 
 // Le digo a Vue que ejecute la función en cuanto monte el componente
