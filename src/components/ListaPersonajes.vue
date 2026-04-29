@@ -17,6 +17,25 @@
         :personaje="personaje" 
       />
     </div>
+
+    <div class="paginacion">
+      <button 
+        :disabled="paginaActual === 1" 
+        @click="cambiarPagina(paginaActual - 1)"
+      >
+        Anterior
+      </button>
+
+      <span> Página {{ paginaActual }} de {{ totalPaginas }} </span>
+
+      <button 
+        :disabled="paginaActual === totalPaginas" 
+        @click="cambiarPagina(paginaActual + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+
   </div>
 </template>
 
@@ -32,16 +51,21 @@ const cargando = ref(true);
 const estadoSeleccionado = ref('');
 const nombreBusqueda = ref('');
 
+const paginaActual = ref(1);
+const totalPaginas = ref(0);
+
 // Esta es la función que obtiene los datos
 async function obtenerPersonajes() {
   cargando.value = true;
   try {
     // La API filtra con ?name=
-    const response = await axios.get(`https://rickandmortyapi.com/api/character/?name=${nombreBusqueda.value}&status=${estadoSeleccionado.value}`);
+    const response = await axios.get(`https://rickandmortyapi.com/api/character/?name=${nombreBusqueda.value}&status=${estadoSeleccionado.value}&page=${paginaActual.value}`);
     personajes.value = response.data.results;
+    totalPaginas.value = response.data.info.pages;
   } catch (error) {
     console.error('Error al cargar:', error);
-    personajes.value = []; //Limpiamos la lista si hay error (ej. no encontrado)
+    personajes.value = [];
+    totalPaginas.value = 0;
   } finally {
     cargando.value = false;
   }
@@ -49,12 +73,21 @@ async function obtenerPersonajes() {
 
 function handleBuscar(nombre) {
   nombreBusqueda.value = nombre; // Guardamos el nombre buscado
+  paginaActual.value = 1; // Reiniciamos a la primera página
   obtenerPersonajes();
 }
 
 function handleFiltrar(estado) {
   estadoSeleccionado.value = estado; // Guardamos el estado seleccionado
+  paginaActual.value = 1; // Reiniciamos a la primera página
   obtenerPersonajes();
+}
+
+function cambiarPagina(nuevaPagina) {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina;
+    obtenerPersonajes();
+  }
 }
 
 // Le digo a Vue que ejecute la función en cuanto monte el componente
