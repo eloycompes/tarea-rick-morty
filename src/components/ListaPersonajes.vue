@@ -3,7 +3,7 @@
     <h2>Listado de Personajes</h2>
 
     <Buscador @buscar="handleBuscar" />
-    
+    <Filtro @filtrar="handleFiltrar" />
     <div v-if="cargando">Cargando personajes...</div>
 
     <div v-else-if="personajes.length === 0">
@@ -25,16 +25,19 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import TarjetaPersonaje from './TarjetaPersonaje.vue';
 import Buscador from './Buscador.vue';
+import Filtro from './filtro.vue';
 
 const personajes = ref([]);
 const cargando = ref(true);
+const estadoSeleccionado = ref('');
+const nombreBusqueda = ref('');
 
 // Esta es la función que obtiene los datos
-async function obtenerPersonajes(nombre = '') {
+async function obtenerPersonajes() {
   cargando.value = true;
   try {
     // La API filtra con ?name=
-    const response = await axios.get(`https://rickandmortyapi.com/api/character/?name=${nombre}`);
+    const response = await axios.get(`https://rickandmortyapi.com/api/character/?name=${nombreBusqueda.value}&status=${estadoSeleccionado.value}`);
     personajes.value = response.data.results;
   } catch (error) {
     console.error('Error al cargar:', error);
@@ -45,7 +48,13 @@ async function obtenerPersonajes(nombre = '') {
 }
 
 function handleBuscar(nombre) {
-  obtenerPersonajes(nombre);
+  nombreBusqueda.value = nombre; // Guardamos el nombre buscado
+  obtenerPersonajes();
+}
+
+function handleFiltrar(estado) {
+  estadoSeleccionado.value = estado; // Guardamos el estado seleccionado
+  obtenerPersonajes();
 }
 
 // Le digo a Vue que ejecute la función en cuanto monte el componente

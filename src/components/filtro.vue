@@ -1,10 +1,11 @@
 <template>
   <div class="filtros">
+    <p>Filtrar por estado:</p>
     <select v-model="estadoSeleccionado" @change="emitirFiltro">
-      <option value="">Todos los estados</option>
-      <option value="alive">Vivo</option>
-      <option value="dead">Muerto</option>
-      <option value="unknown">Desconocido</option>
+      <option value="">-</option>
+      <option value="alive">Alive</option>
+      <option value="dead">Dead</option>
+      <option value="unknown">Unknown</option>
     </select>
   </div>
 </template>
